@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Plain platform theme — this app is 100% Jetpack Compose, so no
+         AppCompat/Material Components XML theme (and its library) is needed.
+         Actual colors are applied at runtime by SafeSOSTheme in Theme.kt. -->
+    <style name="Theme.SafeSOS" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#E53935</item>
+        <item name="android:windowBackground">#FFFFFF</item>
+    </style>
+</resources>
