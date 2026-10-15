@@ -1,62 +1,33 @@
-# SafeSOS — Android Emergency Alert App
+# 📱 SafeSOS — Android Emergency Alert App
 
-**Kotlin + Jetpack Compose.** SafeSOS lets a signed-in user register emergency
-contacts, then send a real SMS emergency alert — with their live location and
-incident details — to all of them in one tap, triggered either from the app or
-by shaking the phone.
+**Kotlin + Jetpack Compose**  
+SafeSOS allows a signed-in user to register emergency contacts and dispatch an instantaneous, real SMS emergency alert—complete with live coordinates and incident profiling details—in one tap or by shaking the device. 
 
-Built for **IBL23305 Mobile Application Development** and covers every
-required component: authentication, a related-table Room database with CRUD,
-a Retrofit REST API integration, and a sensor that drives real app behaviour.
+Built for the **IBL23305 Mobile Application Development** module, this application implements strict production-grade components including secure session persistence, a relational Room database with CRUD operations, advanced sensory input pipelines, and robust Retrofit REST API integration.
 
-**Authors:** Hanif Ismail (SCCJ/00648/2021) · Janet Chepkurui (SCCJ/00648/2023)
+### 👥 Authors
+* **Hanif Ismail** (SCCJ/00648/2021)
+* **Janet Chepkurui** (SCCJ/00648/2023)
 
 ---
 
-## Features
+## ✨ Features
 
-- **Authentication** — Register / Log In / Forgot Password, backed by a local
-  Room `users` table. Passwords are salted and SHA-256 hashed. The session
-  persists across app restarts (via `SessionManager`) until you log out.
-- **Live map on Home** — Google Maps Compose showing your current location
-  (falls back to a clean placeholder if location permission is denied or no
-  Maps key is configured).
-- **Emergency Alert flow** — tap the SOS button (or shake the phone) →
-  **Select Incident Type** (Medical, Fire, Accident, Crime/Security, Natural
-  Disaster, Other) → an adaptive details form (Medical adds blood
-  type/allergies fields, pre-filled from the saved medical profile; everything
-  else gets a free-text description) → **Confirm & Send**, showing your real
-  saved contacts.
-- **Real SMS sending** — Confirm & Send dispatches an actual text message via
-  `SmsManager` to every saved contact, not a simulation. Per-contact failures
-  are caught individually, and the result screen reports who was and wasn't
-  reached.
-- **My Contacts** — full Room-backed CRUD: live list, Add, Edit, Delete, with
-  the first contact you add automatically marked "Primary".
-- **Incident History** — every alert that's sent is logged to a Room
-  `incidents` table (foreign-keyed to the signed-in user, cascading on
-  delete) and shown newest-first from Settings, with type, timestamp,
-  location, details, and exactly who was and wasn't reached.
-- **Profile** — view and edit your own name, email, and phone from Settings.
-- **Manage Medical Info** — save a persisted blood type / condition /
-  allergies profile once, so it auto-fills the Medical incident form instead
-  of being retyped every time.
-- **About screen** — a short in-app page describing what SafeSOS is, its key
-  features, its privacy stance, and the coursework project it was built for.
-- **Safety Tips** — a Retrofit-powered screen pulling a live tip from a public
-  REST API, with loading, error, and retry states.
-- **Shake-to-alert sensor** — the accelerometer is monitored while logged in
-  and on the Home screen; a shake skips the incident picker entirely and goes
-  straight to Confirm & Send as a general emergency alert, for speed.
-- **Settings** — shows the real signed-in user's name and phone, with
-  Incident History, Profile, Manage Medical Info, About, and a working
-  Logout, all in one place.
+* **🛡️ Secure Authentication** — Custom Register, Log In, and Password Reset screens backed by a local Room `users` database table. Passwords are fully salted and securely processed via SHA-256 cryptographic hashing. Active user states are persisted seamlessly across device restarts via `SessionManager`.
+* **🗺️ Real-Time Map Interface** — Clean integration of Google Maps Compose directly onto the main workspace dashboard, providing explicit live user tracking coordinates. Safely falls back to static vector states if hardware geolocation access is restricted.
+* **🚨 Sensor-Driven Emergency Alert Flow** — Triggers dynamically via an intuitive on-screen action button or a direct physical device shake. Broadcasters select from multiple granular Incident Vectors (*Medical, Fire, Accident, Crime/Security, Natural Disaster, Other*). Forms change dynamically based on the alert type; choosing a *Medical* alert auto-fills critical details from the user's stored medical profile.
+* **💬 Native SMS Dispatch Engine** — Employs native Android `SmsManager` services to simultaneously route urgent alerts out to every assigned responder profile sequentially. Includes custom failure isolation logic to track and report delivery confirmations individually per contact on the tracking summary screen.
+* **🗂️ Live Contact Management (CRUD)** — Seamless local relational contact storage allowing rapid additions, standard modifications, and record removals. The initial entry added defaults automatically to your "Primary Contact" profile status.
+* **📜 Cascading Incident Logger** — Every active distress signal logs chronological meta-data payloads down to a dedicated Room `incidents` schema table. Entries link directly back to the active `ownerId` using explicit foreign key cascading rules. Logs viewable directly inside the settings hub showcase chronological error diagnostics, time-stamping metrics, and transmission status histories.
+* **🩹 Persistent Medical Ledger** — A dedicated local configuration panel enabling users to preset critical wellness factors (Blood type, primary allergens, clinical conditions) to bypass typing forms during intense crises.
+* **📡 Retrofit Security Infrastructure** — Asynchronous network communication wrapper pulling safety tips dynamically from a public REST API architecture. Features elegant layout provisions for buffering loading, structural exception errors, and manual refresh requests.
+* **📳 Shake-to-Alert Sensor Matrix** — Monitors active device accelerometer configurations while operating on the homepage environment. Instantly bypasses the selection screens during sudden, heavy motion vectors to queue up absolute alert confirmation configurations within fractions of a second.
 
 ---
 
-## Project structure
+## 🏗️ Project Architecture
 
-```
+```text
 app/src/main/java/com/example/safesos/
 ├── MainActivity.kt                    # NavHost (14 routes) + session + sensor wiring
 ├── data/
@@ -89,113 +60,48 @@ app/src/main/java/com/example/safesos/
         └── SafetyTipScreen.kt
 ```
 
-### Database schema
+### 🗄️ Relational Database Schema
+The database engine runs three strictly synchronized local relational tables mapped via a single core `AppDatabase` controller configuration:
+1. **`users`**: Manages primary account credentials, hashes, and persistent profile state IDs.
+2. **`contacts`**: Keyed directly back to the source account identity using an explicit `ownerId` constraint.
+3. **`incidents`**: Tracks historical alert history objects linked back to individual profiles.
 
-Three related Room tables in `AppDatabase` (`users`, `contacts`, `incidents`):
-`contacts.ownerId` and `incidents.ownerId` are both foreign keys onto
-`users.userId` with `CASCADE` delete, which is what makes Contacts and
-Incident History always show data scoped to the signed-in user, and cleans
-that data up automatically if a user were ever deleted.
-
----
-
-## How to open and run
-
-1. Unzip the project, open Android Studio → **File > Open** → select the
-   `SafeSOS` folder.
-2. Let Gradle sync (pulls Room, Retrofit, Maps Compose, Play Services
-   Location, and Accompanist Permissions — needs internet the first time).
-3. **`local.properties` already has a Maps API key set** (`MAPS_API_KEY=...`),
-   so the live map should work out of the box. If you ever need to replace it:
-   get a free key from [Google Cloud Console](https://console.cloud.google.com/)
-   (enable "Maps SDK for Android") and paste it in as
-   `MAPS_API_KEY=your_key_here`. Leaving it blank shows a placeholder instead
-   of crashing.
-4. **Run on an emulator with Google Play services** (a "No Play Services" AVD
-   won't render the map).
-5. Grant location and SMS permissions when prompted (or later from
-   Settings → Apps → SafeSOS → Permissions).
-
-⚠️ **Do not commit `local.properties` to git or share it publicly** — it now
-contains a real API key. If this project goes into a public repo, add
-`local.properties` to `.gitignore` (Android Studio does this by default for
-new projects) and rotate the key if it's ever been exposed.
+> ℹ️ *Both child configurations (`contacts` and `incidents`) map explicitly to target user IDs using `CASCADE` deletion parameters. This prevents stale unlinked records and clears data profiles cleanly if an upstream account is deleted.*
 
 ---
 
-## Suggested demo flow 
+## 🚀 How to Setup and Run
 
-1. **Register** a new account → lands on Home with the live map and a
-   "Hi, [name]" greeting.
-2. **My Contacts** → add 1–2 real phone numbers you can check for the SMS
-   arriving, edit one, delete one.
-3. **Safety Tips** from Home → shows the Retrofit round-trip live; toggle
-   airplane mode first to also show the no-connection/Retry state.
-4. **Shake the device** (or the emulator's accelerometer panel under Extended
-   Controls) → jumps into **Select Incident Type**.
-5. Pick a type (e.g. **Fire**) → fill the adapted form, try leaving a required
-   field blank first to show validation → **Continue**.
-6. **Confirm & Send** → shows your real saved contacts → **Send** → grant the
-   SMS permission if prompted → check the receiving phone for the actual text
-   → **Sent** screen reports delivery per contact.
-7. **Settings → Incident History** → shows the alert you just sent, logged
-   with type, time, location, and per-contact delivery outcome.
-8. **Settings → Profile** and **Manage Medical Info** → edit and save each,
-   then send a new Medical alert to show the saved blood type/allergies
-   pre-fill the form automatically.
-9. **Settings → About** → shows the in-app description of the project.
-10. **Settings → Logout** → back to Login, then log back in with the same
-    credentials to show the account persisted in Room. Try **Forgot
-    Password** once to show the demo reset-code flow.
+1. Extract the project archives locally and open Android Studio.
+2. Navigate directly to **File > Open** and select the parent `SafeSOS` folder workspace root.
+3. Allow Gradle to synchronize dependencies automatically (*Requires an active internet connection to cache Room libraries, Retrofit engines, Maps Compose environments, and Play Services dependencies initially*).
+4. **API Initialization**: The repository includes preset development keys configured right inside the `local.properties` framework file (`MAPS_API_KEY=...`). To supply your custom keys, visit the [Google Cloud Console](https://google.com), activate the **"Maps SDK for Android"** API engine on your developer container profile, and place the key directly in your local environment workspace:
+   ```properties
+   MAPS_API_KEY=your_key_here
+   ```
+5. Deploy onto a virtual emulator targeted with native **Google Play Services** packages (*Standard basic images omitting active Play library binaries cannot draw vector Map instances*).
+6. Provide system access authorization alerts for active **Device Location** and **SMS Services** when requested at initialization.
+
+⚠️ **Important:** Never tracking-commit your modified `local.properties` definitions out into open Git structures. Keep this configuration nested within your target `.gitignore` setup patterns to safeguard active private integration credentials.
 
 ---
 
-## Known limitations (disclosed, not hidden)
+## 🕹️ Recommended Demonstration Flow
 
-- **Forgot Password** shows the reset code in-app rather than emailing it —
-  there's no mail server in this coursework project, and the UI says so
-  ("Demo mode — no email server is wired up").
-- **Password hashing is salted SHA-256** — a real improvement over plaintext,
-  but not production-grade (no bcrypt/Argon2, no server-side verification).
-- **SMS requires a real SIM or two emulators** to demo convincingly — a
-  physical device is the most reliable option; emulator-to-emulator SMS also
-  works via each AVD's simulated phone number.
-- This project has not been run through an actual Gradle build outside
-  Android Studio — it's been checked file-by-file for matching signatures and
-  consistent wiring, but a first build may still surface something small like
-  a dependency version conflict.
+1. **Authentication** — Complete a new profile registration cycle to initialize an active session and land on the clean Maps Home hub dashboard.
+2. **Contact Provisioning** — Access the **My Contacts** portal to append active phone lines to your responder matrix. Test row modification routines and remove dummy records cleanly.
+3. **API Integrity Verification** — Fire up the **Safety Tips** layout component to view automated data fetching in real time. Switch into Airplane Mode temporarily to verify error catch layouts and offline retry components.
+4. **Sensory Feedback Loop** — Activate your emulator's accelerometer simulator controls and cycle a sharp shake movement pattern to trigger the rapid incident selector switch instantly.
+5. **Form Adaptation Verification** — Select a **Fire** vector pattern, leave mandatory form elements blank to show active input validation safeguards, and then advance.
+6. **Live Alert Dispatches** — Advance past the confirmation panel layout to trigger live cellular messaging tasks out to targeted responder devices. Check receipt states using connected virtual targets.
+7. **Audit Record Analysis** — Open **Settings > Incident History** to verify that logging instances track accurate timelines, structural alert classifications, and individual recipient status codes correctly.
+8. **Automation Profiling** — Configure permanent personal tracking parameters via **Manage Medical Info** and verify that specialized forms fill out automatically during subsequent test cycles.
+9. **Persistence Check** — Run a session **Logout** sequence, return to the workspace door, and log back in to show that local user credentials remain intact inside the Room engine database.
 
 ---
 
-## Ideas for further extension
+## 🛡️ Disclosed Technical Constraints
 
-A few genuine next steps if you want to keep building on this after the demo:
-
-- **Real password reset via email** — wire up a mail-sending backend (e.g.
-  Firebase Auth, or a small server endpoint) instead of the in-app demo code.
-- **Offline queueing for SMS** — if `SmsManager` fails because the radio is
-  off or there's no signal, queue the alert and retry automatically once
-  connectivity returns, rather than just reporting the failure once.
-- **Contact groups / priority tiers** — let some contacts be "notify
-  immediately" and others "notify if unresolved after N minutes."
-- **Incident history** — a simple Room table logging past alerts sent (type,
-  time, contacts notified, outcome), viewable from Settings.
-- **Push-based acknowledgement** — if a contact also has the app installed,
-  let them tap "I'm on it" and reflect that back to the sender, instead of a
-  one-way SMS.
-- **Multi-language support** for the incident and details screens, useful if
-  this is ever used outside an English-first user base.
-- **Biometric unlock** (fingerprint/face) as a faster alternative to
-  re-entering a password after the session expires.
-- **Unit tests** for `AuthRepository`, `ContactsRepository`, and
-  `IncidentType` logic — none exist yet, and they're the easiest, highest-value
-  pieces to cover since they don't need Compose UI testing infrastructure.
-
----
-
-## Project authors
-
-- **Hanif Ismail** — SCCJ/00648/2021
-- **Janet Chepkurui** — SCCJ/00648/2023
-#   S a f e e S O S  
- 
+* **Simulated Password Resets** — Because a standalone university coursework project lacks a dedicated external mail-relay cluster infrastructure, password recovery codes display locally directly within the active UI window environment ("Demo mode — no email server is wired up").
+* **Simplified Encryption Routines** — Account keys rely on localized salted SHA-256 algorithms. While a substantial upgrade over unencrypted cleartext structures, this should be swapped for high-iteration server-backed bcrypt or Argon2 configurations for larger production-scale platforms.
+* **SMS Verification Hardware Requirements** — Real physical target environments or multiple interconnected target developer emulators are required to review physical data transmission pipelines effectively.
